@@ -9,7 +9,7 @@ fetch('/config')
       config: CONFIG,
       model: null,            // fetched from /models on startup
       modelError: null,       // error message if /models fetch fails
-      messages: [],           // { role, content, rawContent, reasoning, images[], isStreaming, stopped, errorDetail }
+      messages: [],           // { role, content, rawContent, reasoning, images[], isStreaming, cancelled, friendlyError, errorDetail, reasoningOpen }
       userInput: '',
       isLoading: false,
       showSettings: false,
@@ -21,13 +21,24 @@ fetch('/config')
   },
 
   mounted() {
-    document.title = this.config.uiName;
+    document.title = this.uiTitle;
     window.addEventListener('keydown', this.handleGlobalKeydown);
     this.fetchModel();
   },
 
   beforeUnmount() {
     window.removeEventListener('keydown', this.handleGlobalKeydown);
+    if (this.abortController) this.abortController.abort();
+  },
+
+  computed: {
+    uiTitle() {
+      const name = this.config.instanceName ?? '';
+      return name.charAt(0).toUpperCase() + name.slice(1) + ' Inference Snap';
+    },
+    supportsVision() {
+      return this.config.capabilities?.includes('vision') ?? false;
+    },
   },
 
   methods: {
@@ -158,10 +169,7 @@ fetch('/config')
       const thinkMatch = /<think>([\s\S]*?)(<\/think>|$)/.exec(raw);
       if (thinkMatch) {
         msg.reasoning = thinkMatch[1];
-        msg.content = raw
-          .replace(/<think>[\s\S]*?<\/think>/g, '')
-          .replace(/<think>[\s\S]*$/, '')
-          .trim();
+        msg.content = raw.replace(/<think>[\s\S]*?(<\/think>|$)/g, '').trim();
       } else {
         msg.content = raw;
       }
@@ -177,10 +185,10 @@ fetch('/config')
     },
 
     // ----------------------------------------------------------------
-    // Edit last message after error: restore user text and remove the
-    // failed exchange so the user can correct and resend.
+    // Retry after error: remove the failed assistant message and
+    // re-send the original user message.
     // ----------------------------------------------------------------
-    editLastMessage(assistantMsgIndex) {
+    retryMessage(assistantMsgIndex) {
       const userMsgIndex = assistantMsgIndex - 1;
       const userMsg = this.messages[userMsgIndex];
       if (!userMsg || userMsg.role !== 'user') return;
@@ -190,7 +198,12 @@ fetch('/config')
         ? content
         : (content.find(p => p.type === 'text')?.text ?? '');
 
+      if (userMsg.images?.length) {
+        this.attachedImage = userMsg.images[0];
+      }
+
       this.messages.splice(userMsgIndex, 2);
+      this.sendMessage();
     },
 
     // ----------------------------------------------------------------
@@ -199,7 +212,7 @@ fetch('/config')
     async sendMessage() {
       if (this.isLoading) return;
       if (!this.model) {
-        alert('Model is not available yet. Please wait or check the API endpoint in config.js.');
+        alert('Model is not available yet. Please wait or check the server logs.');
         return;
       }
       const text = this.userInput.trim();
@@ -207,7 +220,7 @@ fetch('/config')
 
       // Build content for the API.
       let apiContent;
-      if (this.attachedImage && this.config.supportsImages) {
+      if (this.attachedImage && this.supportsVision) {
         apiContent = [
           { type: 'text', text: text || '(image attached)' },
           { type: 'image_url', image_url: { url: this.attachedImage } },
@@ -240,6 +253,9 @@ fetch('/config')
         reasoning: '',
         images: [],
         isStreaming: true,
+        cancelled: false,
+        friendlyError: null,
+        errorDetail: null,
         reasoningOpen: true,
       });
       const msgIndex = this.messages.length - 1;
@@ -248,7 +264,7 @@ fetch('/config')
 
       try {
         const apiMessages = this.messages
-          .filter(m => !m.isStreaming && !m.stopped)
+          .filter(m => !m.isStreaming && !m.cancelled)
           .map(({ role, content }) => ({ role, content }));
 
         const response = await fetch(`${this.config.openAIBaseURL}/chat/completions`, {
@@ -286,6 +302,7 @@ fetch('/config')
             if (!line.startsWith('data: ')) continue;
             const data = line.slice(6).trim();
             if (data === '[DONE]') continue;
+            if (!this.messages[msgIndex]) break;
             try {
               const chunk = JSON.parse(data);
               const delta = chunk.choices?.[0]?.delta ?? {};
@@ -310,11 +327,11 @@ fetch('/config')
           // Keep partial response visible but exclude it and the triggering user
           // message from future context.
           if (this.messages[msgIndex]) {
-            this.messages[msgIndex].stopped = true;
+            this.messages[msgIndex].cancelled = true;
           }
           const userMsg = this.messages[msgIndex - 1];
           if (userMsg && userMsg.role === 'user') {
-            userMsg.stopped = true;
+            userMsg.cancelled = true;
           }
         } else {
           // Show a friendly error; store raw details for the modal.

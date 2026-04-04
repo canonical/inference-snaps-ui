@@ -32,25 +32,23 @@ The interface should show a spinner while waiting for the model's response.
 ### Responses
 The model responses should be streamed and displayed incrementally as they are received from the API, rather than waiting for the entire response to be available.
 
-If the model is a reasoning model, the UI should display a distinct visual indicator to differentiate the thinking process and reasoning output from the final response.
+For thinking output of reasoning models, the UI should display a distinct visual indicator to differentiate the thinking process and reasoning output from the final response.
 
-The UI should have a a button to stop the generation of the model's response and return to the input state. Any partial response should stay in the UI. The user request that led to the stopped response and the partial response should be excluded from the context of future interactions with the model.
+The UI should have a button to cancel a request. Any partial response should stay in the UI. The user request that led to the cancelled response and the partial response should be excluded from the context of future interactions with the model, and marked as "Cancelled" in the UI.
 
 ### Error handling
 Capture any error returned by the API but do not display the raw error message to the user. Instead, show a user-friendly error message in the chat history, prefixed with an error icon (Vanilla Framework's p-icon--error). Provide a link to view the raw error details in a modal dialog for users who want to see more information.
 
-When an error occurs, the user should be able to modify their last message and resend it without having to retype the entire message.
+When an error occurs, the user should be able to retry sending the prompt. 
 
 If the model name cannot be retrieved from the /models endpoint of the OpenAI API, display a warning message in the settings section indicating that the model name could not be retrieved.
 
 ## Configuration
 The web application should consume static configurations of the following parameters:
-- OpenAI Base URL
-- Model capabilities
-    - Whether the model supports images in input
-    - Whether the model is a reasoning model
-- UI name "<name> Inference Snap"
-- Engine name (only for display in the UI)
+- openAIBaseURL(string): OpenAI base URL
+- capabilities(string array): Model capabilities (text, vision, audio, etc) - only text and vision should be supported for now.
+- instanceName(string): used to construct the UI title, e.g. "gemma3" -> "Gemma3 Inference Snap"
+- engineName(string): for display in the UI
 
 These configurations are served by the web server at /config.
 
@@ -74,7 +72,10 @@ The Go server should serve the configurations at /config over HTTP.
 Use hardcoded values in Go for now.
 
 
-## Further considerations (not in scope for this task)
+## Further considerations (not in scope for this implementation)
 - Hot reloading of configurations without refreshing the page.
 - Conversation history
 - Starting a new conversation
+- Control the thinking for models that support it
+- Make image attachment resize configurable
+- Support documents in input

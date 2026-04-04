@@ -221,11 +221,6 @@ body {
   flex: 1;
 }
 
-.chat-error__details-link {
-  font-size: 0.8rem;
-  white-space: nowrap;
-}
-
 .chat-error__actions {
   margin-top: 0.5rem;
 }
@@ -269,8 +264,8 @@ body {
   border-radius: 0 0 0.4rem 0.4rem;
 }
 
-/* Stopped message notice */
-.message-stopped-notice {
+/* Cancelled message notice */
+.message-cancelled-notice {
   margin-top: 0.4rem;
   font-size: 0.75rem;
   color: #c7a000;
@@ -543,6 +538,12 @@ body {
 /* ============================================================
    Status labels (fallback if Vanilla doesn't include them)
    ============================================================ */
+
+.capabilities-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
 
 .p-status-label {
   display: inline-block;

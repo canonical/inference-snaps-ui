@@ -19,7 +19,7 @@
               <div class="p-navigation__logo-tag">
                 <img src="https://assets.ubuntu.com/v1/82818827-CoF_white.svg" alt="Canonical" width="32" height="32">
               </div>
-              <span class="p-navigation__logo-title">{{ config.uiName }}</span>
+              <span class="p-navigation__logo-title">{{ uiTitle }}</span>
             </a>
           </div>
         </div>
@@ -38,21 +38,12 @@
       <div class="row">
         <div class="col-12">
           <div class="settings-content">
-            <h4 class="u-no-margin--bottom">Configuration</h4>
+            <h4 class="u-no-margin--bottom">Settings</h4>
 
-            <!-- Model warning notification -->
-            <div v-if="modelError" class="p-notification--caution" role="alert">
-              <div class="p-notification__content">
-                <p class="p-notification__message">
-                  Could not retrieve model name from the API: {{ modelError }}
-                </p>
-              </div>
-            </div>
-
-            <table class="p-table--mobile-card settings-table" aria-label="Configuration settings">
+            <table class="p-table--mobile-card settings-table" aria-label="Settings">
               <thead>
                 <tr>
-                  <th>Setting</th>
+                  <th>Key</th>
                   <th>Value</th>
                 </tr>
               </thead>
@@ -74,23 +65,25 @@
                   </td>
                 </tr>
                 <tr>
-                  <td data-heading="Setting"><strong>Image Support</strong></td>
+                  <td data-heading="Setting"><strong>Capabilities</strong></td>
                   <td data-heading="Value">
-                    <span :class="config.supportsImages ? 'p-status-label--positive' : 'p-status-label'" class="p-status-label">
-                      {{ config.supportsImages ? 'Enabled' : 'Disabled' }}
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <td data-heading="Setting"><strong>Reasoning Model</strong></td>
-                  <td data-heading="Value">
-                    <span :class="config.reasoningModel ? 'p-status-label--positive' : 'p-status-label'" class="p-status-label">
-                      {{ config.reasoningModel ? 'Yes' : 'No' }}
-                    </span>
+                    <div v-if="config.capabilities?.length" class="capabilities-list">
+                      <span v-for="cap in config.capabilities" :key="cap" class="p-status-label p-status-label--positive">{{ cap }}</span>
+                    </div>
+                    <span v-else class="p-status-label">none</span>
                   </td>
                 </tr>
               </tbody>
             </table>
+
+            <!-- Model warning notification -->
+            <div v-if="modelError" class="p-notification--caution" role="alert">
+              <div class="p-notification__content">
+                <p class="p-notification__message">
+                  Could not retrieve model name from the API: {{ modelError }}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -105,8 +98,7 @@
         <!-- Empty state -->
         <div v-if="messages.length === 0" class="chat-empty-state">
           <p v-if="modelError" class="u-text--muted">
-            Could not connect to the API: <strong>{{ modelError }}</strong><br>
-            Check the <code>APIEndpoint</code> in <code>main.go</code>.
+            Could not connect to <code>{{ config.openAIBaseURL }}</code>: <strong>{{ modelError }}</strong>
           </p>
           <p v-else class="u-text--muted">Start a conversation by typing a message below.</p>
         </div>
@@ -130,7 +122,7 @@
                   title="Click to view full size"
                 />
               </div>
-              <div v-if="message.stopped" class="message-stopped-notice">Not included in context</div>
+              <div v-if="message.cancelled" class="message-cancelled-notice">Cancelled</div>
             </div>
           </div>
 
@@ -159,21 +151,23 @@
               <div v-if="message.friendlyError" class="chat-error">
                 <i class="p-icon--error chat-error__icon"></i>
                 <span class="chat-error__text">{{ message.friendlyError }}</span>
-                <button class="p-button--link chat-error__details-link" @click="openErrorModal(message.errorDetail)">View details</button>
               </div>
 
               <!-- Response text -->
               <div v-else class="chat-message__text" v-html="formatText(message.content)"></div>
 
-              <!-- Edit last message button (shown on error) -->
+              <!-- Retry / details buttons (shown on error) -->
               <div v-if="message.friendlyError" class="chat-error__actions">
-                <button class="p-button--neutral is-small u-no-margin--bottom" @click="editLastMessage(index)">
-                  Edit message
+                <button class="p-button--neutral is-small u-no-margin--bottom" @click="retryMessage(index)">
+                  Retry
+                </button>
+                <button class="p-button--neutral is-small u-no-margin--bottom" @click="openErrorModal(message.errorDetail)">
+                  View details
                 </button>
               </div>
 
-              <!-- Stopped indicator -->
-              <div v-if="message.stopped" class="message-stopped-notice">Generation stopped — not included in context</div>
+              <!-- Cancelled request indicator -->
+              <div v-if="message.cancelled" class="message-cancelled-notice">Cancelled</div>
 
               <!-- Streaming cursor -->
               <span v-if="message.isStreaming && message.content" class="stream-cursor"></span>
@@ -181,7 +175,7 @@
               <!-- Spinner shown while waiting for first token -->
               <div v-if="message.isStreaming && !message.content && !message.reasoning" class="chat-spinner">
                 <div class="p-icon--spinner u-animation--spin"></div>
-                <span class="u-text--muted">Thinking…</span>
+                <span class="u-text--muted">Working…</span>
               </div>
 
             </div>
@@ -207,7 +201,7 @@
             <textarea
               v-model="userInput"
               @keydown="handleKeydown"
-              placeholder="Type a message… (Enter to send, Shift+Enter for new line)"
+              placeholder="Type a message…"
               class="p-form__control chat-textarea"
               :disabled="isLoading"
               rows="3"
@@ -216,7 +210,7 @@
           </div>
           <div class="chat-input-actions">
             <label
-              v-if="config.supportsImages && !isLoading"
+              v-if="supportsVision && !isLoading"
               class="p-button--neutral u-no-margin--bottom"
               title="Attach an image"
               role="button"
@@ -244,8 +238,8 @@
               v-else
               @click="stopGeneration"
               class="p-button--negative u-no-margin--bottom"
-              aria-label="Stop generation"
-            >&#9632; Stop</button>
+              aria-label="Cancel generation"
+            >Cancel</button>
           </div>
         </div>
 
