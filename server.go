@@ -11,10 +11,18 @@ import (
 
 func Serve(conf Config, staticDir string, port int, bindAddress string) error {
 
-	if _, err := os.Stat(filepath.Join(staticDir, "index.html")); errors.Is(err, os.ErrNotExist) {
-		return fmt.Errorf("ensure index.html: %s", err)
+	if err := verifyStaticContent(staticDir); err != nil {
+		return fmt.Errorf("unexpected static files: %w", err)
 	}
 
+	mux := serverMux(conf, staticDir)
+
+	fmt.Printf("Serving %q on http://localhost:%d\n", staticDir, port)
+
+	return http.ListenAndServe(fmt.Sprintf("%s:%d", bindAddress, port), mux)
+}
+
+func serverMux(conf Config, staticDir string) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// Serve configuration for the frontend
@@ -29,7 +37,13 @@ func Serve(conf Config, staticDir string, port int, bindAddress string) error {
 	// Serve the frontend static files
 	mux.Handle("/", http.FileServer(http.Dir(staticDir)))
 
-	fmt.Printf("Serving %q on http://localhost:%d\n", staticDir, port)
+	return mux
+}
 
-	return http.ListenAndServe(fmt.Sprintf("%s:%d", bindAddress, port), mux)
+func verifyStaticContent(staticDir string) error {
+	indexFile := filepath.Join(staticDir, "index.html")
+	if _, err := os.Stat(indexFile); errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("checking %q: %s", indexFile, err)
+	}
+	return nil
 }
