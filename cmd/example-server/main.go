@@ -12,7 +12,7 @@ import (
 
 func main() {
 	openAIBaseURL := flag.String("openai-base-url", "http://localhost:8328/v1", "OpenAI-compatible base URL")
-	capabilitiesFlag := flag.String("capabilities", strings.Join(ui.SupportedUICapabilities(), ","), "Comma-separated UI capabilities")
+	capabilitiesFlag := flag.String("capabilities", strings.Join(ui.SupportedCapabilities(), ","), "Comma-separated UI capabilities")
 	instanceName := flag.String("instance-name", "example", "Instance name shown in the UI")
 	engineName := flag.String("engine-name", "intel-cpu", "Engine name shown in the UI")
 	serverPort := flag.Int("port", 8080, "Port to serve the UI on")
