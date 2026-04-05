@@ -154,7 +154,9 @@
               </div>
 
               <!-- Response text -->
-              <div v-else class="chat-message__text" v-html="formatText(message.content)"></div>
+              <div v-else class="chat-message__text">
+                <span v-html="formatText(message.content)"></span><span v-if="message.isStreaming && message.content" class="stream-cursor"></span>
+              </div>
 
               <!-- Retry / details buttons (shown on error) -->
               <div v-if="message.friendlyError" class="chat-error__actions">
@@ -168,9 +170,6 @@
 
               <!-- Cancelled request indicator -->
               <div v-if="message.cancelled" class="message-cancelled-notice">Cancelled</div>
-
-              <!-- Streaming cursor -->
-              <span v-if="message.isStreaming && message.content" class="stream-cursor"></span>
 
               <!-- Spinner shown while waiting for first token -->
               <div v-if="message.isStreaming && !message.content && !message.reasoning" class="chat-spinner">
