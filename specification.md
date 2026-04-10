@@ -65,13 +65,6 @@ Use Vue.js as the JavaScript framework for building the user interface.
 Use Canonical's Vanilla Framework (https://vanillaframework.io/) for styling and components.
 
 
-## Serving the application
-The application should be served using a server written in Go.
-
-The Go server should serve the configurations at /config over HTTP. 
-Use hardcoded values in Go for now.
-
-
 ## Further considerations (not in scope for this implementation)
 - Hot reloading of configurations without refreshing the page.
 - Conversation history

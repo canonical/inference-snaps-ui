@@ -1,0 +1,9 @@
+{
+  "openAIBaseURL": "http://localhost:8328/v3",
+  "capabilities": [
+    "text",
+    "vision"
+  ],
+  "instanceName": "gemma3",
+  "engineName": "intel-gpu"
+}
