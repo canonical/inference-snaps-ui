@@ -106,7 +106,7 @@ function removeImage() {
         <div class="chat-input-actions">
           <label
             v-if="store.supportsVision && !store.isLoading"
-            class="p-button--neutral u-no-margin--bottom"
+            class="p-button--neutral u-no-margin--bottom attach-button"
             title="Attach an image"
             role="button"
             tabindex="0"
@@ -226,6 +226,16 @@ function removeImage() {
 .chat-input-hint {
   margin: 0.25rem 0 0;
   color: #767676;
+}
+
+.attach-button {
+  opacity: 0.6;
+  transition: opacity 0.15s;
+  cursor: pointer;
+}
+
+.attach-button:hover {
+  opacity: 1;
 }
 
 @media (max-width: 600px) {
