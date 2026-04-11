@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useChatStore } from '@/stores/chat'
+import cofWhite from '@/assets/CoF_white.svg'
 
 const store = useChatStore()
 </script>
@@ -13,7 +14,7 @@ const store = useChatStore()
             <div class="p-navigation__logo-tag">
               <img
                 class="p-navigation__logo-icon"
-                src="https://assets.ubuntu.com/v1/82818827-CoF_white.svg"
+                :src="cofWhite"
                 alt=""
               />
             </div>
