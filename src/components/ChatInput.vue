@@ -54,79 +54,81 @@ function removeImage() {
 
 <template>
   <div class="chat-input-area">
-    <!-- Image preview -->
-    <div v-if="attachedImage" class="chat-input-image-preview">
-      <img
-        :src="attachedImage"
-        alt="Image to attach"
-        class="chat-input-image-thumb"
-        title="Click to view full size"
-        @click="store.openLightbox(attachedImage!)"
-      />
-      <button
-        class="p-button--negative is-small u-no-margin--bottom"
-        aria-label="Remove attached image"
-        @click="removeImage"
-      >
-        &#x2715; Remove
-      </button>
-    </div>
-
-    <!-- Input row -->
-    <div class="chat-input-row">
-      <div class="chat-input-field">
-        <textarea
-          v-model="userInput"
-          placeholder="Type a message…"
-          class="p-form__control chat-textarea"
-          :disabled="store.isLoading"
-          rows="3"
-          aria-label="Message input"
-          @keydown="handleKeydown"
-        ></textarea>
-      </div>
-      <div class="chat-input-actions">
-        <label
-          v-if="store.supportsVision && !store.isLoading"
-          class="p-button--neutral u-no-margin--bottom"
-          title="Attach an image"
-          role="button"
-          tabindex="0"
-          @keydown.enter.prevent="fileInput?.click()"
-          @keydown.space.prevent="fileInput?.click()"
-        >
-          <input
-            ref="fileInput"
-            type="file"
-            accept="image/*"
-            style="display: none"
-            aria-hidden="true"
-            @change="handleImageUpload"
-          />
-          &#128392; Attach
-        </label>
+    <div class="u-fixed-width">
+      <!-- Image preview -->
+      <div v-if="attachedImage" class="chat-input-image-preview">
+        <img
+          :src="attachedImage"
+          alt="Image to attach"
+          class="chat-input-image-thumb"
+          title="Click to view full size"
+          @click="store.openLightbox(attachedImage!)"
+        />
         <button
-          v-if="!store.isLoading"
-          :disabled="!userInput.trim() && !attachedImage"
-          class="p-button--positive u-no-margin--bottom"
-          @click="handleSend"
+          class="p-button--negative is-small u-no-margin--bottom"
+          aria-label="Remove attached image"
+          @click="removeImage"
         >
-          Send
-        </button>
-        <button
-          v-else
-          class="p-button--negative u-no-margin--bottom"
-          aria-label="Cancel generation"
-          @click="emit('cancel')"
-        >
-          Cancel
+          &#x2715; Remove
         </button>
       </div>
-    </div>
 
-    <p class="chat-input-hint u-text--muted">
-      <small>Enter to send &nbsp;&bull;&nbsp; Shift+Enter for new line</small>
-    </p>
+      <!-- Input row -->
+      <div class="chat-input-row">
+        <div class="chat-input-field">
+          <textarea
+            v-model="userInput"
+            placeholder="Type a message…"
+            class="p-form__control chat-textarea"
+            :disabled="store.isLoading"
+            rows="3"
+            aria-label="Message input"
+            @keydown="handleKeydown"
+          ></textarea>
+        </div>
+        <div class="chat-input-actions">
+          <label
+            v-if="store.supportsVision && !store.isLoading"
+            class="p-button--neutral u-no-margin--bottom"
+            title="Attach an image"
+            role="button"
+            tabindex="0"
+            @keydown.enter.prevent="fileInput?.click()"
+            @keydown.space.prevent="fileInput?.click()"
+          >
+            <input
+              ref="fileInput"
+              type="file"
+              accept="image/*"
+              style="display: none"
+              aria-hidden="true"
+              @change="handleImageUpload"
+            />
+            &#128392; Attach
+          </label>
+          <button
+            v-if="!store.isLoading"
+            :disabled="!userInput.trim() && !attachedImage"
+            class="p-button--positive u-no-margin--bottom"
+            @click="handleSend"
+          >
+            Send
+          </button>
+          <button
+            v-else
+            class="p-button--negative u-no-margin--bottom"
+            aria-label="Cancel generation"
+            @click="emit('cancel')"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+
+      <p class="chat-input-hint u-text--muted">
+        <small>Enter to send &nbsp;&bull;&nbsp; Shift+Enter for new line</small>
+      </p>
+    </div>
   </div>
 </template>
 
@@ -136,7 +138,8 @@ function removeImage() {
   flex-shrink: 0;
   background-color: #fff;
   border-top: 1px solid #d9d9d9;
-  padding: 0.75rem 1rem 0.5rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.5rem;
 }
 
 .chat-input-image-preview {

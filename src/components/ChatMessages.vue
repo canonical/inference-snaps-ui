@@ -39,23 +39,25 @@ defineExpose({ scrollToBottom })
     aria-live="polite"
     aria-label="Conversation history"
   >
-    <!-- Empty state -->
-    <div v-if="store.messages.length === 0" class="chat-empty-state">
-      <p v-if="store.modelError" class="u-text--muted">
-        Could not connect to <code>{{ store.config.openAIBaseURL }}</code>:
-        <strong>{{ store.modelError }}</strong>
-      </p>
-      <p v-else class="u-text--muted">Start a conversation by typing a message below.</p>
-    </div>
+    <div class="u-fixed-width chat-messages__inner">
+      <!-- Empty state -->
+      <div v-if="store.messages.length === 0" class="chat-empty-state">
+        <p v-if="store.modelError" class="u-text--muted">
+          Could not connect to <code>{{ store.config.openAIBaseURL }}</code>:
+          <strong>{{ store.modelError }}</strong>
+        </p>
+        <p v-else class="u-text--muted">Start a conversation by typing a message below.</p>
+      </div>
 
-    <!-- Message list -->
-    <MessageBubble
-      v-for="(message, index) in store.messages"
-      :key="index"
-      :message="message"
-      :index="index"
-      @retry="(i) => emit('retry', i)"
-    />
+      <!-- Message list -->
+      <MessageBubble
+        v-for="(message, index) in store.messages"
+        :key="index"
+        :message="message"
+        :index="index"
+        @retry="(i) => emit('retry', i)"
+      />
+    </div>
   </div>
 </template>
 
@@ -63,10 +65,18 @@ defineExpose({ scrollToBottom })
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem 1rem 0.5rem;
+  padding: 1rem 0 0.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-messages__inner {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  flex: 1;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 
 .chat-empty-state {
