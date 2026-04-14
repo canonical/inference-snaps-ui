@@ -1,6 +1,6 @@
 {
-  "name": "Inference Snaps",
-  "short_name": "Inference Snaps",
+  "name": "Inference Snaps UI",
+  "short_name": "Inference Snaps UI",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",

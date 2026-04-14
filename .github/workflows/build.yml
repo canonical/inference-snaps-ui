@@ -1,0 +1,42 @@
+name: Build project
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Append Git Hash to package.json version
+        run: |
+          SHORT_SHA=$(git rev-parse --short ${{ github.sha }})
+          echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
+          BASE_VERSION=$(node -p "require('./package.json').version.split('+')")
+          npm version ${BASE_VERSION}+${SHORT_SHA} --no-git-tag-version
+          echo "Building project with version: ${BASE_VERSION}+${SHORT_SHA}"
+
+      - name: Build project
+        run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: inference-snaps-ui-${{ env.SHORT_SHA }}
+          path: dist
