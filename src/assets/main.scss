@@ -1,0 +1,22 @@
+// Import Vanilla Framework from npm and emit all CSS
+@use 'vanilla-framework' as *;
+@include vanilla;
+
+/* Global reset and layout for the chat app */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#app {
+  height: 100%;
+}
