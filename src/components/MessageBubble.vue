@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import { useChatStore } from '@/stores/chat'
 import type { ChatMessage, MessageContentPart } from '@/types'
 
@@ -13,15 +15,10 @@ const emit = defineEmits<{
 
 const store = useChatStore()
 
-function formatText(text: string | null | undefined): string {
+function renderMarkdown(text: string | null | undefined): string {
   if (!text) return ''
-  return String(text)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
-    .replace(/\n/g, '<br>')
+  const raw = marked.parse(String(text)) as string
+  return DOMPurify.sanitize(raw)
 }
 
 function getUserText(): string {
@@ -44,7 +41,7 @@ function toggleReasoning() {
   <div v-if="message.role === 'user'" class="chat-message chat-message--user">
     <div class="chat-message__avatar" aria-label="You">You</div>
     <div class="chat-message__bubble">
-      <div class="chat-message__text" v-html="formatText(getUserText())"></div>
+      <div class="chat-message__text markdown-body" v-html="renderMarkdown(getUserText())"></div>
       <div v-if="message.images && message.images.length" class="chat-message__images">
         <img
           v-for="(img, i) in message.images"
@@ -77,7 +74,7 @@ function toggleReasoning() {
           <span v-if="message.isStreaming" class="reasoning-pulse"></span>
         </button>
         <div v-show="message.reasoningOpen" class="reasoning-content">
-          <div v-html="formatText(message.reasoning)"></div>
+          <div v-html="renderMarkdown(message.reasoning)"></div>
         </div>
       </div>
 
@@ -88,10 +85,11 @@ function toggleReasoning() {
       </div>
 
       <!-- Response text -->
-      <div v-else class="chat-message__text">
-        <span v-html="formatText(typeof message.content === 'string' ? message.content : '')"></span>
-        <span v-if="message.isStreaming && message.content" class="stream-cursor"></span>
-      </div>
+      <div
+        v-else
+        class="chat-message__text markdown-body"
+        v-html="renderMarkdown(typeof message.content === 'string' ? message.content : '')"
+      ></div>
 
       <!-- Retry / details buttons (shown on error) -->
       <div v-if="message.friendlyError" class="chat-error__actions">
@@ -180,7 +178,7 @@ function toggleReasoning() {
 }
 
 .chat-message__text {
-  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
 .chat-message__images {
@@ -237,15 +235,7 @@ function toggleReasoning() {
   font-style: italic;
 }
 
-.stream-cursor {
-  display: inline-block;
-  width: 2px;
-  height: 1em;
-  background-color: currentColor;
-  margin-left: 1px;
-  vertical-align: text-bottom;
-  animation: blink 0.8s step-end infinite;
-}
+
 
 .chat-spinner {
   display: flex;
@@ -316,7 +306,6 @@ function toggleReasoning() {
   border-top: 1px solid #c4a882;
   max-height: 12rem;
   overflow-y: auto;
-  white-space: pre-wrap;
   word-break: break-word;
 }
 
@@ -331,11 +320,6 @@ function toggleReasoning() {
   }
 }
 
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
-}
 
 @keyframes pulse {
   0%,
@@ -353,6 +337,92 @@ function toggleReasoning() {
   .chat-message__bubble {
     max-width: 88%;
   }
+}
+
+/* Markdown rendering */
+.markdown-body :deep(p) {
+  margin: 0 0 0.5em;
+}
+.markdown-body :deep(p:last-child) {
+  margin-bottom: 0;
+}
+.markdown-body :deep(h1),
+.markdown-body :deep(h2),
+.markdown-body :deep(h3),
+.markdown-body :deep(h4),
+.markdown-body :deep(h5),
+.markdown-body :deep(h6) {
+  margin: 0.75em 0 0.35em;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.markdown-body :deep(h1) { font-size: 1.4em; }
+.markdown-body :deep(h2) { font-size: 1.2em; }
+.markdown-body :deep(h3) { font-size: 1.05em; }
+.markdown-body :deep(ul),
+.markdown-body :deep(ol) {
+  margin: 0.4em 0 0.4em 1.5em;
+  padding: 0;
+}
+.markdown-body :deep(li) {
+  margin-bottom: 0.2em;
+}
+.markdown-body :deep(code) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.875em;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 0.25em;
+  padding: 0.1em 0.35em;
+}
+.chat-message--user .markdown-body :deep(code) {
+  background: rgba(255, 255, 255, 0.2);
+}
+.markdown-body :deep(pre) {
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 0.4em;
+  padding: 0.75em 1em;
+  overflow-x: auto;
+  margin: 0.5em 0;
+}
+.chat-message--user .markdown-body :deep(pre) {
+  background: rgba(255, 255, 255, 0.15);
+}
+.markdown-body :deep(pre code) {
+  background: none;
+  padding: 0;
+  font-size: 0.85em;
+}
+.markdown-body :deep(blockquote) {
+  border-left: 3px solid #ccc;
+  margin: 0.5em 0;
+  padding: 0.2em 0.75em;
+  color: inherit;
+  opacity: 0.8;
+}
+.markdown-body :deep(a) {
+  color: inherit;
+  text-decoration: underline;
+}
+.markdown-body :deep(hr) {
+  border: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
+  margin: 0.75em 0;
+}
+.markdown-body :deep(table) {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.5em 0;
+  font-size: 0.9em;
+}
+.markdown-body :deep(th),
+.markdown-body :deep(td) {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  padding: 0.3em 0.6em;
+  text-align: left;
+}
+.markdown-body :deep(th) {
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.04);
 }
 </style>
 

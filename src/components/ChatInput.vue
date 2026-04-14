@@ -105,11 +105,12 @@ function removeImage() {
         </div>
         <div class="chat-input-actions">
           <label
-            v-if="store.supportsVision && !store.isLoading"
-            class="p-button--neutral u-no-margin--bottom attach-button"
+            v-if="store.supportsVision"
+            class="p-button u-no-margin--bottom"
+            :class="{ 'is-disabled': store.isLoading }"
             title="Attach an image"
             role="button"
-            tabindex="0"
+            :tabindex="store.isLoading ? -1 : 0"
             @keydown.enter.prevent="fileInput?.click()"
             @keydown.space.prevent="fileInput?.click()"
           >
@@ -119,6 +120,7 @@ function removeImage() {
               accept="image/*"
               style="display: none"
               aria-hidden="true"
+              :disabled="store.isLoading"
               @change="handleImageUpload"
             />
             &#128392; Attach
@@ -221,6 +223,28 @@ function removeImage() {
   flex-direction: column;
   gap: 0.4rem;
   flex-shrink: 0;
+}
+
+.chat-input-actions > * {
+  width: 100%;
+}
+
+.chat-input-actions label.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.thinking-switch {
+  margin-bottom: 0;
+}
+
+.thinking-switch .p-switch__label {
+  display: inline-block;
+  width: auto;
+  overflow: visible;
+  white-space: nowrap;
+  text-overflow: unset;
 }
 
 .chat-input-hint {
