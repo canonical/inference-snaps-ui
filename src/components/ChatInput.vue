@@ -122,7 +122,7 @@ function removeImage() {
             <i class="p-icon--upload"></i>
             <span>Attach</span>
           </button>
-          <label v-if="store.showThinkingToggle" class="p-switch thinking-switch">
+          <label v-if="store.showThinkingToggle" class="p-switch u-no-margin--bottom thinking-switch">
             <input
               v-model="store.thinkingEnabled"
               type="checkbox"
@@ -244,10 +244,6 @@ function removeImage() {
   width: 100%;
 }
 
-.thinking-switch {
-  margin-bottom: 0;
-}
-
 .thinking-switch .p-switch__label {
   display: inline-block;
   width: auto;
@@ -280,11 +276,13 @@ function removeImage() {
   .chat-input-actions > * {
     width: auto;
     flex: 1;
+    margin-right: 0;
   }
 
   .thinking-switch {
     flex: 0 0 auto;
     width: 8rem;
+    padding-top: 0;
   }
 }
 </style>
