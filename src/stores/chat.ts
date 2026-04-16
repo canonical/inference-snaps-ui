@@ -24,7 +24,7 @@ export const useChatStore = defineStore('chat', () => {
   const activeErrorDetail = ref<string | null>(null)
 
   // ── Thinking toggle ───────────────────────────────────────────────────────
-  const thinkingEnabled = ref(false)
+  const thinkingEnabled = ref(true)
 
   // ── Computed ──────────────────────────────────────────────────────────────
   const uiTitle = computed(() => {
