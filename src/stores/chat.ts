@@ -42,7 +42,7 @@ export const useChatStore = defineStore('chat', () => {
 
   // ── Actions ───────────────────────────────────────────────────────────────
   async function fetchConfig(): Promise<void> {
-    const response = await fetch('/config')
+    const response = await fetch(import.meta.env.VITE_CONFIG_URL)
     config.value = await response.json()
   }
 
