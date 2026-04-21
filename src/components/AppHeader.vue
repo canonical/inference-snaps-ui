@@ -12,11 +12,7 @@ const store = useChatStore()
         <div class="p-navigation__tagged-logo">
           <a class="p-navigation__link" href="#">
             <div class="p-navigation__logo-tag">
-              <img
-                class="p-navigation__logo-icon"
-                :src="cofWhite"
-                alt=""
-              />
+              <img class="p-navigation__logo-icon" :src="cofWhite" alt="" />
             </div>
             <span class="p-navigation__logo-title">{{ store.uiTitle }}</span>
           </a>
@@ -60,7 +56,6 @@ const store = useChatStore()
 </template>
 
 <style scoped>
-
 .settings-toggle {
   display: flex;
   align-items: center;

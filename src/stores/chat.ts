@@ -23,6 +23,9 @@ export const useChatStore = defineStore('chat', () => {
   const lightboxImage = ref<string | null>(null)
   const activeErrorDetail = ref<string | null>(null)
 
+  // ── Thinking toggle ───────────────────────────────────────────────────────
+  const thinkingEnabled = ref(true)
+
   // ── Computed ──────────────────────────────────────────────────────────────
   const uiTitle = computed(() => {
     const name = config.value.instanceName ?? ''
@@ -31,6 +34,10 @@ export const useChatStore = defineStore('chat', () => {
 
   const supportsVision = computed(() =>
     config.value.capabilities?.includes('vision') ?? false,
+  )
+
+  const showThinkingToggle = computed(() =>
+    config.value.instanceName?.includes('nemotron-3') ?? false,
   )
 
   // ── Actions ───────────────────────────────────────────────────────────────
@@ -77,8 +84,10 @@ export const useChatStore = defineStore('chat', () => {
     isSettingsPanelOpen,
     lightboxImage,
     activeErrorDetail,
+    thinkingEnabled,
     uiTitle,
     supportsVision,
+    showThinkingToggle,
     fetchConfig,
     fetchModelName,
     openLightbox,

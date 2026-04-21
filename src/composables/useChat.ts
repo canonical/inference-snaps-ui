@@ -105,15 +105,21 @@ export function useChat(scrollToBottom: (force?: boolean) => void) {
         .filter((m) => !m.isStreaming && !m.cancelled)
         .map(({ role, content }) => ({ role, content }))
 
+      const requestBody: Record<string, unknown> = {
+        model: store.modelName,
+        messages: apiMessages,
+        stream: true,
+      }
+
+      if (store.showThinkingToggle) {
+        requestBody['chat_template_kwargs'] = { enable_thinking: store.thinkingEnabled }
+      }
+
       const response = await fetch(`${store.config.openAIBaseURL}/chat/completions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         signal: abortController.value.signal,
-        body: JSON.stringify({
-          model: store.modelName,
-          messages: apiMessages,
-          stream: true,
-        }),
+        body: JSON.stringify(requestBody),
       })
 
       if (!response.ok) {

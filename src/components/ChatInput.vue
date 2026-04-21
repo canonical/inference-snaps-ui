@@ -70,48 +70,52 @@ function removeImage() {
 <template>
   <div class="chat-input-area">
     <div class="u-fixed-width">
-      <!-- Image preview -->
-      <div v-if="attachedImage" class="chat-input-image-preview">
-        <img
-          :src="attachedImage"
-          alt="Image to attach"
-          class="chat-input-image-thumb"
-          title="Click to view full size"
-          @click="store.openLightbox(attachedImage!)"
-        />
-        <button
-          class="p-button--negative is-small u-no-margin--bottom"
-          aria-label="Remove attached image"
-          @click="removeImage"
-        >
-          &#x2715; Remove
-        </button>
-      </div>
-
       <!-- Input row -->
       <div class="chat-input-row">
         <div class="chat-input-field">
+          <!-- Image preview -->
+          <div v-if="attachedImage" class="chat-input-image-preview">
+            <div class="chat-input-image-thumb-wrapper">
+              <img
+                :src="attachedImage"
+                alt="Image to attach"
+                class="chat-input-image-thumb"
+                title="Click to view full size"
+                @click="store.openLightbox(attachedImage!)"
+              />
+              <button
+                class="p-button--negative is-small has-icon chat-input-image-remove"
+                aria-label="Remove attached image"
+                type="button"
+                @click="removeImage"
+              >
+                <i class="p-icon--close is-light"></i>
+              </button>
+            </div>
+          </div>
           <textarea
             ref="textarea"
             v-model="userInput"
+            rows="3"
             placeholder="Type a message…"
             class="p-form__control chat-textarea"
             :class="{ 'chat-textarea--loading': store.isLoading }"
             :readonly="store.isLoading"
-            rows="3"
             aria-label="Message input"
             @keydown="handleKeydown"
           ></textarea>
         </div>
-        <div class="chat-input-actions">
-          <label
-            v-if="store.supportsVision && !store.isLoading"
-            class="p-button--neutral u-no-margin--bottom attach-button"
+      </div>
+      <!-- Actions row -->
+      <div class="chat-input-actions">
+        <div class="chat-input-actions-left">
+          <button
+            v-if="store.supportsVision"
+            :disabled="store.isLoading"
+            class="p-button has-icon u-no-margin--bottom"
             title="Attach an image"
-            role="button"
-            tabindex="0"
-            @keydown.enter.prevent="fileInput?.click()"
-            @keydown.space.prevent="fileInput?.click()"
+            type="button"
+            @click="fileInput?.click()"
           >
             <input
               ref="fileInput"
@@ -119,36 +123,56 @@ function removeImage() {
               accept="image/*"
               style="display: none"
               aria-hidden="true"
+              tabindex="-1"
               @change="handleImageUpload"
             />
-            &#128392; Attach
+<!--            <i class="p-icon&#45;&#45;upload"></i>-->
+            <span>Attach</span>
+          </button>
+          <label
+            v-if="store.showThinkingToggle"
+            class="p-switch u-no-margin--bottom thinking-switch"
+          >
+            <input
+              v-model="store.thinkingEnabled"
+              type="checkbox"
+              class="p-switch__input"
+              role="switch"
+              :disabled="store.isLoading"
+            />
+            <span class="p-switch__slider"></span>
+            <span class="p-switch__label">{{
+              store.thinkingEnabled ? 'Thinking on' : 'Thinking off'
+            }}</span>
           </label>
+        </div>
+        <div class="chat-input-actions-right">
+          <p class="chat-input-hint u-text--muted">
+            <small>Enter to send &nbsp;&bull;&nbsp; Shift+Enter for new line</small>
+          </p>
           <button
             v-if="!store.isLoading"
             :disabled="!userInput.trim() && !attachedImage"
-            class="p-button--positive u-no-margin--bottom"
+            class="p-button--positive has-icon u-no-margin--bottom"
             @click="handleSend"
           >
-            Send
+<!--            <i class="p-icon&#45;&#45;play is-light"></i>-->
+            <span>Send</span>
           </button>
           <button
             v-else
-            class="p-button--negative u-no-margin--bottom"
+            class="p-button--negative has-icon u-no-margin--bottom"
             aria-label="Cancel generation"
             @click="emit('cancel')"
           >
-            Cancel
+<!--            <i class="p-icon&#45;&#45;stop is-light"></i>-->
+            <span>Cancel</span>
           </button>
         </div>
       </div>
-
-      <p class="chat-input-hint u-text--muted">
-        <small>Enter to send &nbsp;&bull;&nbsp; Shift+Enter for new line</small>
-      </p>
     </div>
   </div>
 </template>
-
 
 <style scoped>
 .chat-input-area {
@@ -170,30 +194,44 @@ function removeImage() {
   border: 1px solid #d9d9d9;
 }
 
+.chat-input-image-thumb-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
 .chat-input-image-thumb {
   max-height: 60px;
   max-width: 120px;
   object-fit: contain;
   border-radius: 0.2rem;
   cursor: zoom-in;
+  display: block;
+}
+
+.chat-input-image-remove {
+  position: absolute;
+  top: 0rem;
+  right: 0rem;
+  transform: scale(0.7);
+  transform-origin: top right;
 }
 
 .chat-input-row {
   display: flex;
   gap: 0.5rem;
-  align-items: flex-end;
+  align-items: stretch;
 }
 
 .chat-input-field {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .chat-textarea {
   width: 100%;
   resize: vertical;
   margin-bottom: 0;
-  min-height: 2.5rem;
-  max-height: 10rem;
   font-family: inherit;
   font-size: 0.875rem;
   padding: 0.5rem 0.75rem;
@@ -218,30 +256,70 @@ function removeImage() {
 
 .chat-input-actions {
   display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  flex-shrink: 0;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.chat-input-actions-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.chat-input-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.thinking-switch {
+  align-self: center;
+  margin-bottom: 0 !important;
+  margin-top: 0;
+  padding-top: 0 !important;
+}
+
+.thinking-switch .p-switch__label {
+  display: inline-block;
+  width: auto;
+  overflow: visible;
+  white-space: nowrap;
+  text-overflow: unset;
 }
 
 .chat-input-hint {
-  margin: 0.25rem 0 0;
+  margin: 0;
+  padding-top: 0 !important;
   color: #767676;
-}
-
-.attach-button {
-  opacity: 0.6;
-  transition: opacity 0.15s;
-  cursor: pointer;
-}
-
-.attach-button:hover {
-  opacity: 1;
+  white-space: nowrap;
 }
 
 @media (max-width: 600px) {
+  .chat-input-row {
+    flex-wrap: wrap;
+  }
+
+  .chat-input-field {
+    flex: 1 1 100%;
+  }
+
   .chat-input-actions {
-    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .thinking-switch {
+    flex: 0 0 auto;
+  }
+
+  .chat-input-hint {
+    display: none;
   }
 }
 </style>
-

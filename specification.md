@@ -59,6 +59,39 @@ The UI should display the configurations as read-only in a settings section, ind
 
 Do not display the UI name in the settings section as this is already shown in the header.
 
+### Reasoning / Thinking
+
+If the instance name, as reported by the /config endpoint, contains the substring "nemotron-3", we need to show a button to toggle thinking/reasoning on or off.
+This button should be around the same place as the attach and send buttons.
+A new field is added to the request to indicate if the response should contain reasoning or not.
+
+The additional field looks like this:
+```
+"chat_template_kwargs": {"enable_thinking": false}
+```
+
+For example, when the toggle is on, the request should look similar to this:
+```
+curl http://localhost:8000/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+        "model": "model",
+        "messages":[{"role": "user", "content": "Write a haiku about GPUs"}],
+        "chat_template_kwargs": {"enable_thinking": true}
+    }'
+```
+
+When the toggle is off, the request should look similar to this:
+```
+curl http://localhost:8000/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+        "model": "model",
+        "messages":[{"role": "user", "content": "Write a haiku about GPUs"}],
+        "chat_template_kwargs": {"enable_thinking": false}
+    }'
+```
+
 ## UI frameworks
 Use Vue.js as the JavaScript framework for building the user interface.
 
