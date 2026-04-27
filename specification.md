@@ -92,6 +92,17 @@ curl http://localhost:8000/v1/chat/completions \
     }'
 ```
 
+### Configurable formatting of the input and output messages
+
+The `/config` endpoint can contain the optional field, `chat-format`.
+This field indicates the markup used by the respective model.
+By default, plain text is assumed, so no formatting is applied to the prompts, reasoning and responses.
+
+If the chat format is set to `markdown`, format the prompts, reasoning and responses as Markdown.
+As far as practically possible, use standard Vanilla Framework [typography](https://vanillaframework.io/docs/base/typography) to format the Markdown styles.
+
+In all cases, sanitize the input and output to prevent XSS vulnerabilities.
+
 ## UI frameworks
 Use Vue.js as the JavaScript framework for building the user interface.
 
