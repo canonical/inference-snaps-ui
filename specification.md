@@ -49,6 +49,7 @@ The web application should consume static configurations of the following parame
 - capabilities(string array): Model capabilities (text, vision, audio, etc) - only text and vision should be supported for now.
 - instanceName(string): used to construct the UI title, e.g. "gemma3" -> "Gemma3 Inference Snap"
 - engineName(string): for display in the UI
+- chatFormat(string): the markup used by the model, e.g. "markdown" or "plaintext"
 
 These configurations are served by the web server at /config.
 
@@ -92,16 +93,19 @@ curl http://localhost:8000/v1/chat/completions \
     }'
 ```
 
-### Configurable formatting of the input and output messages
+### Chat format
 
-The `/config` endpoint can contain the optional field, `chat-format`.
 This field indicates the markup used by the respective model.
-By default, plain text is assumed, so no formatting is applied to the prompts, reasoning and responses.
 
-If the chat format is set to `markdown`, format the prompts, reasoning and responses as Markdown.
+Always sanitize the input and output to prevent XSS vulnerabilities.
+
+By default, plain text is assumed.
+The prompts, reasoning and responses should be rendered directly, and not be interpreted as any markup.
+Therefore, any characters that could be interpreted as HTML should be escaped, and line breaks should be preserved.
+
+If the chat format is set to `markdown`, format the prompts, reasoning and responses following Markdown.
 As far as practically possible, use standard Vanilla Framework [typography](https://vanillaframework.io/docs/base/typography) to format the Markdown styles.
 
-In all cases, sanitize the input and output to prevent XSS vulnerabilities.
 
 ## UI frameworks
 Use Vue.js as the JavaScript framework for building the user interface.
