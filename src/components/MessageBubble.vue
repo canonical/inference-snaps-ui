@@ -132,7 +132,6 @@ function toggleReasoning() {
         <span
           v-html="formatText(typeof message.content === 'string' ? message.content : '')"
         ></span>
-        <span v-if="message.isStreaming && message.content" class="stream-cursor"></span>
       </div>
 
       <!-- Retry / details buttons (shown on error) -->
@@ -154,13 +153,9 @@ function toggleReasoning() {
       <!-- Cancelled indicator -->
       <div v-if="message.cancelled" class="message-cancelled-notice">Cancelled</div>
 
-      <!-- Spinner while waiting for first token -->
-      <div
-        v-if="message.isStreaming && !message.content && !message.reasoning"
-        class="chat-spinner"
-      >
+      <!-- Spinner while streaming -->
+      <div v-if="message.isStreaming" class="chat-spinner">
         <div class="p-icon--spinner u-animation--spin"></div>
-        <span class="u-text--muted">Working…</span>
       </div>
     </div>
   </div>
@@ -207,6 +202,7 @@ function toggleReasoning() {
   border-radius: 0.5rem;
   line-height: 1.5;
   word-break: break-word;
+  position: relative;
 }
 
 .chat-message--user .chat-message__bubble {
@@ -220,6 +216,9 @@ function toggleReasoning() {
   color: #111;
   border: 1px solid #d9d9d9;
   border-bottom-left-radius: 0.1rem;
+  min-width: 3rem;
+  min-height: 2.5rem;
+  padding-bottom: 1rem;
 }
 
 .chat-message__text {
@@ -318,30 +317,19 @@ function toggleReasoning() {
   font-style: italic;
 }
 
-.stream-cursor {
-  display: inline-block;
-  width: 2px;
-  height: 1em;
-  background-color: currentColor;
-  margin-left: 1px;
-  vertical-align: text-bottom;
-  animation: blink 0.8s step-end infinite;
-}
-
 .chat-spinner {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.6rem;
 }
 
 .p-icon--spinner {
   display: inline-block;
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1rem;
+  height: 1rem;
   border: 2px solid #d9d9d9;
   border-top-color: #e95420;
   border-radius: 50%;
-  flex-shrink: 0;
 }
 
 /* Reasoning block */
@@ -413,12 +401,6 @@ function toggleReasoning() {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes blink {
-  50% {
-    opacity: 0;
   }
 }
 
