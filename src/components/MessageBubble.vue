@@ -1,8 +1,24 @@
 <script setup lang="ts">
-import { marked } from 'marked'
+import MarkdownIt from 'markdown-it'
 import DOMPurify from 'dompurify'
+import hljs from 'highlight.js/lib/common'
+import 'highlight.js/styles/github.css'
 import { useChatStore } from '@/stores/chat'
 import type { ChatMessage, MessageContentPart } from '@/types'
+
+const md = new MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true,
+  highlight(code, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return hljs.highlight(code, { language: lang, ignoreIllegals: true }).value
+      } catch {}
+    }
+    return hljs.highlightAuto(code).value
+  },
+})
 
 const props = defineProps<{
   message: ChatMessage
@@ -30,7 +46,7 @@ function formatPlain(text: string | null | undefined): string {
 
 function formatMarkdown(text: string | null | undefined): string {
   if (!text) return ''
-  return DOMPurify.sanitize(marked.parse(String(text)) as string)
+  return DOMPurify.sanitize(md.render(String(text)))
 }
 
 function formatText(text: string | null | undefined): string {
@@ -224,13 +240,17 @@ function toggleReasoning() {
   background: none !important;
 }
 
-/* Override code/link colours inside user (blue) bubbles */
-.chat-message--user .chat-message__text--markdown :deep(pre code) {
-  color: #fff;
-}
-
+/* Override link colours inside user (blue) bubbles */
 .chat-message--user .chat-message__text--markdown :deep(a) {
   color: #cce4ff;
+  text-decoration: underline;
+}
+
+/* Use same background and default text colour in user message as in AI message */
+.chat-message--user .chat-message__text--markdown :deep(pre),
+.chat-message--user .chat-message__text--markdown :deep(code) {
+  background-color: #f6f8fa;
+  color: #111;
 }
 
 .chat-message--user .chat-message__text--markdown :deep(blockquote) {
@@ -240,10 +260,6 @@ function toggleReasoning() {
 /* Reasoning content markdown overrides */
 .reasoning-content--markdown {
   white-space: normal;
-}
-
-.reasoning-content--markdown :deep(pre code) {
-  color: #5a4000;
 }
 
 .chat-message__images {
