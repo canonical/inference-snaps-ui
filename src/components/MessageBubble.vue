@@ -153,9 +153,13 @@ function toggleReasoning() {
       <!-- Cancelled indicator -->
       <div v-if="message.cancelled" class="message-cancelled-notice">Cancelled</div>
 
-      <!-- Spinner while streaming -->
-      <div v-if="message.isStreaming" class="chat-spinner">
+      <!-- Spinner while waiting for first token -->
+      <div
+        v-if="message.isStreaming && !message.content && !message.reasoning"
+        class="chat-spinner"
+      >
         <div class="p-icon--spinner u-animation--spin"></div>
+        <span class="u-text--muted">Working…</span>
       </div>
     </div>
   </div>
@@ -318,18 +322,9 @@ function toggleReasoning() {
 }
 
 .chat-spinner {
-  position: absolute;
-  bottom: 0.5rem;
-  right: 0.6rem;
-}
-
-.p-icon--spinner {
-  display: inline-block;
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid #d9d9d9;
-  border-top-color: #e95420;
-  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 /* Reasoning block */
