@@ -2,6 +2,56 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { AppConfig, ChatMessage } from '@/types'
 
+/**
+ * Rewrite an OpenAI base URL to use the current page hostname when the
+ * configured URL points to a local development host (localhost or 127.0.0.1).
+ *
+ * Behavior:
+ * - If `baseURL` is not an absolute URL, returns it unchanged.
+ * - If not running in a browser environment (`window` undefined), returns the original.
+ * - If the current page hostname is `localhost` or `127.0.0.1`, returns the original.
+ * - Only rewrites when `baseURL`'s hostname is `localhost` or `127.0.0.1` and the
+ *   current page hostname is a non-local hostname — port and path are preserved.
+ *
+ * Example:
+ * patchOpenAIBaseURLForCurrentHost('http://localhost:8334/v1', { hostname: 'app.example.com', href: 'https://app.example.com/' })
+ * -> 'http://app.example.com:8334/v1'
+ *
+ * @param baseURL - The configured OpenAI base URL (absolute or otherwise)
+ * @param currentLocation - Optional location object (defaults to `window.location`)
+ * @returns The rewritten absolute URL string, or the original `baseURL` if no rewrite is performed
+ */
+export function patchOpenAIBaseURLForCurrentHost(
+  baseURL: string,
+  currentLocation: Pick<Location, 'hostname' | 'href'> = window.location,
+): string {
+
+  let url: URL
+  try {
+    // Only accept absolute URLs — reject relative or invalid inputs.
+    url = new URL(baseURL)
+  } catch {
+    return baseURL
+  }
+
+  if (typeof window === 'undefined')
+    return baseURL
+
+  const pageHostname = currentLocation.hostname
+  if (!pageHostname || pageHostname === 'localhost' || pageHostname === '127.0.0.1') {
+    return baseURL
+  }
+
+  // Only rewrite localhost/127.0.0.1 targets when the page hostname is not local.
+  if (url.hostname !== 'localhost' && url.hostname !== '127.0.0.1') {
+    return baseURL
+  }
+
+  // preserve port and path
+  url.hostname = pageHostname
+  return url.toString()
+}
+
 export const useChatStore = defineStore('chat', () => {
   // ── Config ──────────────────────────────────────────────────────────────
   const config = ref<AppConfig>({
@@ -45,7 +95,11 @@ export const useChatStore = defineStore('chat', () => {
   // ── Actions ───────────────────────────────────────────────────────────────
   async function fetchConfig(): Promise<void> {
     const response = await fetch(import.meta.env.VITE_CONFIG_URL)
-    config.value = await response.json()
+    const fetchedConfig = await response.json()
+    config.value = {
+      ...fetchedConfig,
+      openAIBaseURL: patchOpenAIBaseURLForCurrentHost(fetchedConfig.openAIBaseURL),
+    }
   }
 
   async function fetchModelName(): Promise<void> {

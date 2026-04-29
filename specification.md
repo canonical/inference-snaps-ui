@@ -4,7 +4,7 @@ A web-based OpenAI chat client that connects to OpenAI-compliant REST API server
 
 # Specification
 
-This must be a single-page application that can be hosted with a static web server. 
+This must be a single-page application that can be hosted with a static web server.
 It should be responsive and work well on both desktop and mobile devices.
 
 ## Chat
@@ -39,7 +39,7 @@ The UI should have a button to cancel a request. Any partial response should sta
 ### Error handling
 Capture any error returned by the API but do not display the raw error message to the user. Instead, show a user-friendly error message in the chat history, prefixed with an error icon (Vanilla Framework's p-icon--error). Provide a link to view the raw error details in a modal dialog for users who want to see more information.
 
-When an error occurs, the user should be able to retry sending the prompt. 
+When an error occurs, the user should be able to retry sending the prompt.
 
 If the model name cannot be retrieved from the /models endpoint of the OpenAI API, display a warning message in the settings section indicating that the model name could not be retrieved.
 
@@ -52,6 +52,8 @@ The web application should consume static configurations of the following parame
 - chatFormat(string): the markup used by the model, e.g. "markdown" or "plaintext"
 
 These configurations are served by the web server at /config.
+
+When the configuration is received by the web page, it checks if webpage domain is localhost. If not, the specified openAIBaseURL is patched to target the same hostname as the web page, but keeping the original port and endpoint.
 
 The model name should be queried from the /models endpoint of the OpenAI API.
 
