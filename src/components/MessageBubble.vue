@@ -72,11 +72,8 @@ function toggleReasoning() {
 const reasoningContainer = ref<HTMLElement | null>(null)
 // True when the user has manually scrolled up inside the reasoning block.
 const reasoningUserScrolled = ref(false)
-// Flag to suppress scroll events fired by our own programmatic scrolls.
-let isProgrammaticReasoningScroll = false
 
 function onReasoningScroll() {
-  if (isProgrammaticReasoningScroll) return
   const el = reasoningContainer.value
   if (!el) return
   const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
@@ -87,11 +84,7 @@ function scrollReasoningToBottom(force = false) {
   const el = reasoningContainer.value
   if (!el) return
   if (!force && reasoningUserScrolled.value) return
-  isProgrammaticReasoningScroll = true
   el.scrollTop = el.scrollHeight
-  requestAnimationFrame(() => {
-    isProgrammaticReasoningScroll = false
-  })
 }
 
 // Scroll whenever new reasoning text arrives while streaming.
