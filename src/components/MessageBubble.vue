@@ -106,7 +106,7 @@ function toggleReasoning() {
         >
           <span class="reasoning-toggle__icon">{{ message.reasoningOpen ? '▾' : '▸' }}</span>
           <span>{{ message.isStreaming ? 'Thinking…' : 'View reasoning' }}</span>
-          <span v-if="message.isStreaming" class="reasoning-pulse"></span>
+          <span v-if="message.isReasoning" class="reasoning-pulse"></span>
         </button>
         <div
           v-show="message.reasoningOpen"

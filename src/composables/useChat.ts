@@ -72,6 +72,7 @@ export function useChat(scrollToBottom: (force?: boolean) => void) {
       reasoning: '',
       images: attachedImage ? [attachedImage] : [],
       isStreaming: false,
+      isReasoning: false,
       cancelled: false,
       friendlyError: null,
       errorDetail: null,
@@ -90,6 +91,7 @@ export function useChat(scrollToBottom: (force?: boolean) => void) {
       reasoning: '',
       images: [],
       isStreaming: true,
+      isReasoning: false,
       cancelled: false,
       friendlyError: null,
       errorDetail: null,
@@ -158,6 +160,9 @@ export function useChat(scrollToBottom: (force?: boolean) => void) {
             const delta = chunk.choices?.[0]?.delta ?? {}
             if (delta.reasoning_content) {
               msg.reasoning += delta.reasoning_content
+              msg.isReasoning = true
+            } else {
+              msg.isReasoning = false
             }
             if (delta.content) {
               msg.rawContent += delta.content
