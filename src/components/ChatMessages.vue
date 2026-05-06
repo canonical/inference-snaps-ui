@@ -13,15 +13,16 @@ const emit = defineEmits<{
 // True when the user has manually scrolled up away from the bottom.
 // Reset when they scroll back to the bottom, or when a new message is sent.
 const userScrolled = ref(false)
-// Flag to suppress the scroll event fired by our own programmatic scrolls.
-let isProgrammaticScroll = false
 
 function onScroll() {
-  if (isProgrammaticScroll) return
   const container = messagesContainer.value
   if (!container) return
   const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight
-  // If user scrolled back near the bottom, re-enable auto-scroll
+  // Update on every scroll event — both user-initiated and programmatic.
+  // Programmatic scrolls always go to the bottom, so they produce distanceFromBottom ≈ 0
+  // and will correctly set userScrolled to false. Suppressing events with a flag was
+  // causing genuine user scroll events to be swallowed when they raced with a programmatic
+  // scroll, preventing the user override from registering.
   userScrolled.value = distanceFromBottom > 30
 }
 
@@ -29,12 +30,7 @@ function scrollToBottom(force = false) {
   const container = messagesContainer.value
   if (!container) return
   if (!force && userScrolled.value) return
-  isProgrammaticScroll = true
   container.scrollTop = container.scrollHeight
-  // Clear the flag after the scroll event has fired
-  requestAnimationFrame(() => {
-    isProgrammaticScroll = false
-  })
 }
 
 // Watch messages length — force scroll and reset the user-scrolled flag on new messages
