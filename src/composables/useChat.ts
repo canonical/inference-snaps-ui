@@ -10,7 +10,7 @@ function syncReasoning(msg: ChatMessage) {
   const raw = msg.rawContent
   const match = /<think>([\s\S]*?)(<\/think>|$)/.exec(raw)
   if (match) {
-    msg.reasoning = match[1] ?? ''
+    msg.reasoningContent = match[1] ?? ''
     msg.content = raw.replace(/<think>[\s\S]*?(<\/think>|$)/g, '').trim()
   } else {
     msg.content = raw
@@ -69,7 +69,7 @@ export function useChat(scrollToBottom: (force?: boolean) => void) {
       role: 'user',
       content: apiContent,
       rawContent: '',
-      reasoning: '',
+      reasoningContent: '',
       images: attachedImage ? [attachedImage] : [],
       isStreaming: false,
       isReasoning: false,
@@ -88,7 +88,7 @@ export function useChat(scrollToBottom: (force?: boolean) => void) {
       role: 'assistant',
       content: '',
       rawContent: '',
-      reasoning: '',
+      reasoningContent: '',
       images: [],
       isStreaming: true,
       isReasoning: false,
@@ -159,7 +159,7 @@ export function useChat(scrollToBottom: (force?: boolean) => void) {
             const chunk = JSON.parse(data) as { choices?: { delta?: { reasoning_content?: string; content?: string } }[] }
             const delta = chunk.choices?.[0]?.delta ?? {}
             if (delta.reasoning_content) {
-              msg.reasoning += delta.reasoning_content
+              msg.reasoningContent += delta.reasoning_content
               msg.isReasoning = true
             } else {
               msg.isReasoning = false

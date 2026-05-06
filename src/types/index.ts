@@ -15,7 +15,7 @@ export interface ChatMessage {
   /** Raw accumulated streaming content (before reasoning extraction) */
   rawContent: string
   /** Extracted reasoning/thinking text from <think> tags or reasoning_content delta */
-  reasoning: string
+  reasoningContent: string
   /** Base64 data URLs of images attached by the user */
   images: string[]
   /** True while the assistant response is still streaming */

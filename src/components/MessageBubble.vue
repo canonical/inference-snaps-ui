@@ -98,7 +98,7 @@ function toggleReasoning() {
     <div class="chat-message__avatar" aria-label="Assistant">AI</div>
     <div class="chat-message__bubble">
       <!-- Reasoning section -->
-      <div v-if="message.reasoning" class="reasoning-block">
+      <div v-if="message.reasoningContent" class="reasoning-block">
         <button
           class="reasoning-toggle"
           :aria-expanded="message.reasoningOpen"
@@ -115,7 +115,7 @@ function toggleReasoning() {
           class="reasoning-content"
           :class="{ 'reasoning-content--markdown': store.isMarkdown }"
         >
-          <div v-html="formatText(message.reasoning)"></div>
+          <div v-html="formatText(message.reasoningContent)"></div>
         </div>
       </div>
 
@@ -157,7 +157,7 @@ function toggleReasoning() {
 
       <!-- Spinner while waiting for first token -->
       <div
-        v-if="message.isStreaming && !message.content && !message.reasoning"
+        v-if="message.isStreaming && !message.content && !message.reasoningContent"
         class="chat-spinner"
       >
         <div class="p-icon--spinner u-animation--spin"></div>
