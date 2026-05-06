@@ -195,7 +195,10 @@ export function useChat(scrollToBottom: (force?: boolean) => void) {
       }
     } finally {
       const msg = store.messages[msgIndex]
-      if (msg) msg.isStreaming = false
+      if (msg) {
+        msg.isStreaming = false
+        msg.isReasoning = false
+      }
       store.isLoading = false
       abortController.value = null
       await nextTick()
