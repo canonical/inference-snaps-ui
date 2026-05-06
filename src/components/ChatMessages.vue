@@ -18,11 +18,6 @@ function onScroll() {
   const container = messagesContainer.value
   if (!container) return
   const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight
-  // Update on every scroll event — both user-initiated and programmatic.
-  // Programmatic scrolls always go to the bottom, so they produce distanceFromBottom ≈ 0
-  // and will correctly set userScrolled to false. Suppressing events with a flag was
-  // causing genuine user scroll events to be swallowed when they raced with a programmatic
-  // scroll, preventing the user override from registering.
   userScrolled.value = distanceFromBottom > 30
 }
 
