@@ -3,6 +3,7 @@ import MarkdownIt from 'markdown-it'
 import DOMPurify from 'dompurify'
 import hljs from 'highlight.js/lib/common'
 import 'highlight.js/styles/github.css'
+import { ref, watch, nextTick } from 'vue'
 import { useChatStore } from '@/stores/chat'
 import type { ChatMessage, MessageContentPart } from '@/types'
 
@@ -66,6 +67,45 @@ function toggleReasoning() {
   const storeMsg = store.messages[props.index]
   if (storeMsg) storeMsg.reasoningOpen = !storeMsg.reasoningOpen
 }
+
+// ── Reasoning block auto-scroll ──────────────────────────────────────────────
+const reasoningContainer = ref<HTMLElement | null>(null)
+// True when the user has manually scrolled up inside the reasoning block.
+const reasoningUserScrolled = ref(false)
+
+function onReasoningScroll() {
+  const el = reasoningContainer.value
+  if (!el) return
+  const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+  reasoningUserScrolled.value = distanceFromBottom > 30
+}
+
+function scrollReasoningToBottom(force = false) {
+  const el = reasoningContainer.value
+  if (!el) return
+  if (!force && reasoningUserScrolled.value) return
+  el.scrollTop = el.scrollHeight
+}
+
+// Scroll whenever new reasoning text arrives while streaming.
+watch(
+  () => props.message.reasoning,
+  async () => {
+    await nextTick()
+    scrollReasoningToBottom()
+  },
+)
+
+// Force-scroll to bottom (and reset user-scroll flag) when the panel is opened.
+watch(
+  () => props.message.reasoningOpen,
+  async (isOpen) => {
+    if (!isOpen) return
+    reasoningUserScrolled.value = false
+    await nextTick()
+    scrollReasoningToBottom(true)
+  },
+)
 </script>
 
 <template>
@@ -110,8 +150,10 @@ function toggleReasoning() {
         </button>
         <div
           v-show="message.reasoningOpen"
+          ref="reasoningContainer"
           class="reasoning-content"
           :class="{ 'reasoning-content--markdown': store.isMarkdown }"
+          @scroll="onReasoningScroll"
         >
           <div v-html="formatText(message.reasoning)"></div>
         </div>
