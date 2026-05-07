@@ -89,7 +89,7 @@ function scrollReasoningToBottom(force = false) {
 
 // Scroll whenever new reasoning text arrives while streaming.
 watch(
-  () => props.message.reasoning,
+  () => props.message.reasoningContent,
   async () => {
     await nextTick()
     scrollReasoningToBottom()
@@ -138,15 +138,17 @@ watch(
     <div class="chat-message__avatar" aria-label="Assistant">AI</div>
     <div class="chat-message__bubble">
       <!-- Reasoning section -->
-      <div v-if="message.reasoning" class="reasoning-block">
+      <div v-if="message.reasoningContent" class="reasoning-block">
         <button
           class="reasoning-toggle"
           :aria-expanded="message.reasoningOpen"
           @click="toggleReasoning"
         >
           <span class="reasoning-toggle__icon">{{ message.reasoningOpen ? '▾' : '▸' }}</span>
-          <span>{{ message.isStreaming ? 'Thinking…' : 'View reasoning' }}</span>
-          <span v-if="message.isStreaming" class="reasoning-pulse"></span>
+          <span>{{
+            message.isStreaming && message.isReasoning ? 'Thinking…' : 'View reasoning'
+          }}</span>
+          <span v-if="message.isStreaming && message.isReasoning" class="reasoning-pulse"></span>
         </button>
         <div
           v-show="message.reasoningOpen"
@@ -155,7 +157,7 @@ watch(
           :class="{ 'reasoning-content--markdown': store.isMarkdown }"
           @scroll="onReasoningScroll"
         >
-          <div v-html="formatText(message.reasoning)"></div>
+          <div v-html="formatText(message.reasoningContent)"></div>
         </div>
       </div>
 
@@ -197,7 +199,7 @@ watch(
 
       <!-- Spinner while waiting for first token -->
       <div
-        v-if="message.isStreaming && !message.content && !message.reasoning"
+        v-if="message.isStreaming && !message.content && !message.reasoningContent"
         class="chat-spinner"
       >
         <div class="p-icon--spinner u-animation--spin"></div>

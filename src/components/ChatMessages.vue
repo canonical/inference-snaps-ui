@@ -41,7 +41,7 @@ watch(
 // Watch the content of the last streaming message so we scroll on every chunk
 const lastMessageContent = computed(() => {
   const last = store.messages.at(-1)
-  return last?.isStreaming ? (last.content ?? '') + (last.reasoning ?? '') : null
+  return last?.isStreaming ? (last.content ?? '') + (last.reasoningContent ?? '') : null
 })
 
 watch(lastMessageContent, async () => {
