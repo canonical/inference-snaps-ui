@@ -89,7 +89,7 @@ function scrollReasoningToBottom(force = false) {
 
 // Scroll whenever new reasoning text arrives while streaming.
 watch(
-  () => props.message.reasoning,
+  () => props.message.reasoningContent,
   async () => {
     await nextTick()
     scrollReasoningToBottom()
